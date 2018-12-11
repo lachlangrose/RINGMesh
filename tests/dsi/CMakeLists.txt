@@ -31,27 +31,6 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
-set(TEST_DATA_INPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/data")
-set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output")
-set(CTEST_OUTPUT_ON_FAILURE ON)
 
-# Create the directory for the outputs of the tests
-# It is output in the configuration file as well as the test input data directory
-file(MAKE_DIRECTORY ${TEST_DATA_OUTPUT_DIRECTORY})
-
-# Configure a header file to pass some of the CMake settings
-# to the source code
-set(test_config_file_in ${TEST_DIRECTORY}/ringmesh_tests_config.h.in)
-set(test_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tests_config.h)
-configure_file(${test_config_file_in} ${test_config_file})
-
-add_subdirectory(basic)
-add_subdirectory(geogram_extension)
-add_subdirectory(geomodel/builder)
-add_subdirectory(geomodel/core)
-add_subdirectory(geomodel/tools)
-add_subdirectory(io)
-add_subdirectory(mesh)
-add_subdirectory(tetrahedralize)
-add_subdirectory(dsi)
+add_ringmesh_test(interpolation.cpp tetrahedralize io geogram_extension)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)

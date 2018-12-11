@@ -1,0 +1,13 @@
+version:                "3"
+services:
+  datascience-notebook:
+      image:            12ba453ff6db
+      container_name:   ringmesh-container
+      deploy:
+        resources:
+          limits:
+            cpus: '0.8'
+            memory: 1000M
+          reservations:
+            cpus: '0.0001'
+            memory: 20M
