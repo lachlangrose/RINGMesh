@@ -4,6 +4,7 @@
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/basic/command_line.h>
+#include <geogram/basic/attributes.h>
 //#include <ringmesh/io/geomodel/io_vtk.hpp>
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
@@ -257,7 +258,25 @@ int main(int argc, char** argv) {
     //// Tetrahedralize the GeoModel
     //// tetrahedralize(geomodel, NO_ID, false);
     // std::string file_name_out(ringmesh_test_data_path);
-     geomodel_save(geomodel, ringmesh_test_output_path + "geomodel" +
+    GEO::vector<std::string> names;
+    std::cout<< geomodel.nb_regions()<<std::endl;
+    for (index_t m = 0; m<geomodel.nb_regions(); m++) {  // loop over regions
+        std::cout<<m<<std::endl;
+        const Region3D& cur_reg = geomodel.region(m);
+        GEO::AttributesManager& reg_attr_mgr =
+            cur_reg.vertex_attribute_manager();
+        reg_attr_mgr.list_attribute_names(names);
+        for (const auto& name : names) {
+            GEO::AttributeStore* attr_store =
+                reg_attr_mgr.find_attribute_store(name);
+            GEO::ReadOnlyScalarAttributeAdapter cur_attr(reg_attr_mgr, name);
+            for (index_t vi = 0; vi < cur_reg.nb_vertices(); vi++) {
+                std::cout << cur_attr[vi] << std::endl;
+
+            }
+        }
+    }
+    geomodel_save(geomodel, ringmesh_test_output_path + "geomodel" +
                                 std::to_string(3) + "d." + "so");
     // index_t nb{0};
     // index_t nc{0};
