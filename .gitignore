@@ -3,3 +3,5 @@ build
 /node_modules/
 /package-lock.json
 /*.kdev4
+/html/
+/doc/latex/
