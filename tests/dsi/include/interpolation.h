@@ -9,20 +9,25 @@ namespace RINGMesh {
 class Point3D {
 public:
     Point3D(double x, double y, double z);
-
+    inline double x() const;
+    inline double y() const;
+    inline double z() const;
 private:
     double _x;
     double _y;
     double _z;
 };
-class InterfaceData : Point3D {
+double Point3D::x() const {return _x;}
+double Point3D::y() const {return _y;}
+double Point3D::z() const {return _z;}
+class InterfaceData : public Point3D {
 public:
     InterfaceData(double x, double y, double z, double v);
     double _v;
-
+    
 private:
 };
-class PlanarData : Point3D {
+class PlanarData : public Point3D {
 public:
     PlanarData(double x, double y, double z, Point3D v);
     Point3D _v;
@@ -35,7 +40,7 @@ public:
     void add_control_points(std::vector<InterfaceData> interfacedata);
     void add_gradient_control_points(std::vector<PlanarData> planardata);
     void build_interpolation_matrix();
-
+    void solve_system();
 private:
     void calculate_cell_gradient(index_t cell_global_index,
                                  Eigen::MatrixXd& grad,
@@ -49,6 +54,7 @@ private:
 
     Eigen::MatrixXd _I;
     index_t _c;
+    index_t _nc;
     std::unordered_map<index_t, index_t> _dinfo;
 };
 }  // namespace RINGMesh
