@@ -118,13 +118,41 @@ namespace
             }
             out << EOL;
 
-            out << "CELL_DATA " << mesh.cells.nb() << EOL;
-            out << "SCALARS region int 1" << EOL;
-            out << "LOOKUP_TABLE default" << EOL;
-            for( auto c : range( mesh.cells.nb() ) )
-            {
-                out << mesh.cells.region( c ) << EOL;
+            //out << "CELL_DATA " << mesh.cells.nb() << EOL;
+            //out << "SCALARS region int 1" << EOL;
+            //out << "LOOKUP_TABLE default" << EOL;
+            //for( auto c : range( mesh.cells.nb() ) )
+            //{
+            //    out << mesh.cells.region( c ) << EOL;
+            //}
+            //-------------------------------------------------------
+            //LG adding in exporter for vertex prop
+            GEO::vector<std::string> names;
+            for (index_t m = 0; m<geomodel.nb_regions(); m++) {  // loop over regions
+                const Region3D& cur_reg = geomodel.region(m);
+                GEO::AttributesManager& reg_attr_mgr =
+                    cur_reg.vertex_attribute_manager();
+                reg_attr_mgr.list_attribute_names(names);
+
+                    out << "POINT_DATA " << cur_reg.nb_vertices() <<EOL;
+
+                    out << "FIELD FieldData 3 " <<EOL; //SCALARS "<<name<<" float64 1" <<EOL;
+                for (const auto& name : names) {
+                    std::cout<<name<<std::endl;
+                    out << name <<" 1 "<<cur_reg.nb_vertices()<<" double"<<EOL;
+                    //LOOKUP_TABLE default" << EOL;
+                    
+                    GEO::AttributeStore* attr_store =
+                        reg_attr_mgr.find_attribute_store(name);
+                    GEO::ReadOnlyScalarAttributeAdapter cur_attr(reg_attr_mgr, name);
+                    for (index_t vi = 0; vi < cur_reg.nb_vertices(); vi++) {
+                        out << cur_attr[vi] << EOL;
+
+                    }
+                }
             }
+
+            
             out << EOL;
             out << std::flush;
         }

@@ -44,7 +44,12 @@ void DSI::calculate_cell_gradient(index_t cell_global_index,
                                   Eigen::MatrixXd& grad,
                                   std::vector<index_t>& vert_idx) {
     Eigen::MatrixXd vertices(_mesh.cells.nb_vertices(cell_global_index), 3);
-
+    //vertices 
+    // x0 y0 z0 //
+    // x1 y1 z1 //
+    // x2 y2 z2 //
+    // x3 y3 z3 //
+    // x4 y4 z4 //
     for (index_t vi = 0; vi < _mesh.cells.nb_vertices(cell_global_index);
          vi++) {
         index_t vert =
@@ -53,15 +58,20 @@ void DSI::calculate_cell_gradient(index_t cell_global_index,
         for (index_t c = 0; c < 3; c++) {
             vertices(vi, c) = vertex[c];
         }
-        vert_idx.push_back(vi);
+        vert_idx.push_back(vert);
+
     }
-    Eigen::MatrixXd d_f(3, 3);
+    Eigen::MatrixXd m(3, 3); // from A.4 frank
+    // x1-x0 y1-y0 z1-z0 //
+    // x2-x0 y2-y0 z2-z0 //
+    // x3-x0 y3-y0 z3-z0 //
+
     for (index_t i = 0; i < 3; i++) {
-        d_f(0, i) = vertices(i + 1, 0) - vertices(0, 0);
-        d_f(1, i) = vertices(i + 1, 1) - vertices(0, 1);
-        d_f(2, i) = vertices(i + 1, 2) - vertices(0, 2);
+        m(i,0) = vertices(i + 1, 0) - vertices(0, 0); 
+        m(i,1) = vertices(i + 1, 1) - vertices(0, 1);
+        m(i,2) = vertices(i + 1, 2) - vertices(0, 2);
     }
-    grad = d_f.inverse() * _I;
+    grad = m.inverse() * _I;
     return;
 }
 void DSI::add_constant_gradient(double w) {
@@ -80,7 +90,7 @@ void DSI::add_constant_gradient(double w) {
     index_t next_available_position, position_to_write;
     for (index_t m = 0; m < _mesh.geomodel().nb_regions();
          m++) {  // loop over regions
-        _nc = _mesh.cells.nb_vertices(m);
+        _nc = _mesh.geomodel().region(m).nb_vertices();
         for (index_t c = 0; c < _mesh.cells.nb_cells(m);
              c++) {  // loop over cells in region
             // get the cell gradient
@@ -151,18 +161,18 @@ void DSI::add_constant_gradient(double w) {
                     }
                 }
                 for (index_t i = 0; i < Nc; i++) {
-                    // std::cout<<i<<" " <<cstr[i]<<" "<<idc[i]<<"
-                    // "<<_c<<std::endl;
-                    _A.push_back(cstr[i]);
+                    _A.push_back(cstr[i]*0.1);
                     _col.push_back(idc[i]);
                     _row.push_back(_c);
-                    _B.push_back(0.0);
                     idc[i] = 0.0;
                     cstr[i] = 0;
                 }
+            _c++;  // next constraint adds a new row to the matrix
+
+           _B.push_back(0.0);
                 // install constraint
             }      // end loop over neighbours
-            _c++;  // next constraint adds a new row to the matrix
+
         }
     }
 }
@@ -175,7 +185,9 @@ void DSI::add_control_points(std::vector<InterfaceData> interfacedata) {
         M = Eigen::MatrixXd::Constant(4, 4, 1.0);
         vecn<3> point(iface.x(), iface.y(), iface.z());
         index_t containing_cell = aabb3D.containing_cell(point);
+        std::cout<<"adding a control point"<<std::endl;
         if (containing_cell != GEO::NO_CELL) {
+            std::cout<<"Found a cell"<<std::endl;
             for (index_t vi = 0; vi < _mesh.cells.nb_vertices(containing_cell);
                  vi++) {
                 index_t vert_id =
@@ -203,22 +215,84 @@ void DSI::add_control_points(std::vector<InterfaceData> interfacedata) {
         }
     }
 }
+
+void DSI::add_gradient_control_points(std::vector<PlanarData> planardata) {
+//    Eigen::MatrixXd e(3, 3);
+//    Eigen::VectorXd scalar_product(4);
+//    for (const auto& planar : planardata) {
+//
+//        vecn<3> point(planar.x(), planar.y(), planar.z());
+//        index_t containing_cell = aabb3D.containing_cell(point);
+//        if (containing_cell != GEO::NO_CELL) {
+//            std::vector<index_t> vert_idx;
+//            calculate_cell_gradient(containing_cell, e, vert_idx);
+//            for (index_t i = 0; i<4; i++ ){ //n nodes
+//                for (index_t j = 0; j <3; j++) {
+//                scalar_product(i) = e(j,i)*
+//                    
+//                    }
+//                }
+//            
+//            std::cout<<"Found a cell"<<std::endl;
+//            for (index_t vi = 0; vi < _mesh.cells.nb_vertices(containing_cell);
+//                 vi++) {
+// {
+//
+//                index_t vert_id =
+//                    _mesh.cells.vertex(ElementLocalVertex(containing_cell, vi));
+//                auto vert = _mesh.cells.mesh().vertex(vert_id);
+//                for (index_t j = 0; j < 3; j++) {
+//                    M(vi, j) = vert[j];
+//                }
+//            }
+//            Eigen::MatrixXd cp(1, 4);
+//            cp = Eigen::MatrixXd::Constant(1, 4, 1.0);
+//            cp(1) = iface.x();
+//            cp(2) = iface.y();
+//            cp(3) = iface.z();
+//            auto c = cp * M.inverse();
+//            for (index_t i = 0; i < _mesh.cells.nb_vertices(containing_cell);
+//                 i++) {
+//                _A.push_back(c(i));
+//                _row.push_back(_c);
+//                _col.push_back(
+//                    _mesh.cells.vertex(ElementLocalVertex(containing_cell, i)));
+//            }
+//            _B.push_back(iface._v);
+//            _c++;
+//        }
+//    }
+//
+//    
+//    
+    }
 void DSI::solve_system() {
-    Eigen::SparseMatrix<double> A(_nc, _c);
-    Eigen::VectorXd B(_nc);
+    Eigen::SparseMatrix<double> A(_c, _nc);
+    Eigen::VectorXd B(_c);
     A.reserve(_A.size());
     for (index_t i = 0; i < _A.size(); i++) {
-        A.insert(_col[i], _row[i]) = _A[i];
+        A.insert( _row[i], _col[i]) = _A[i];
     }
-    for (index_t i = 0; i < _nc; i++) {
+    //std::cout<<A<<std::endl;
+    
+    for (index_t i = 0; i < _c; i++) {
         B(i) = _B[i];
     }
     Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double> > lscg;
     lscg.compute(A);
-
-    auto x = lscg.solve(B);
+    if (lscg.info() !=Eigen::Success){
+        std::cout<<"Failed 1"<<std::endl;
+        }
+    
+    Eigen::MatrixXd x = lscg.solve(B);
+    //auto x = lscg.solve(B);
+        if (lscg.info() !=Eigen::Success){
+        std::cout<<"Failed 2"<<std::endl;
+        }
     std::cout << "#iterations:     " << lscg.iterations() << std::endl;
     std::cout << "estimated error: " << lscg.error() << std::endl;
+    //x = lscg.solve(B);
+
     for (index_t m = 0; m < _mesh.geomodel().nb_regions();
          m++) {  // loop over regions
         const Region3D& cur_reg = _mesh.geomodel().region(m);
@@ -226,13 +300,11 @@ void DSI::solve_system() {
         GEO::AttributesManager& reg_attr_mgr =
             cur_reg.vertex_attribute_manager();
         GEO::Attribute<double> interpolant_attr(reg_attr_mgr, "interpolant");
-
         for (index_t c = 0; c < _nc; c++) {
             interpolant_attr[c] = x(c);  //( rounded_volume % 2 == 0 );
         }
     }
 }
-void DSI::add_gradient_control_points(std::vector<PlanarData> planardata) {}
 int main(int argc, char** argv) {
     using namespace RINGMesh;
 
@@ -242,19 +314,25 @@ int main(int argc, char** argv) {
     // Check only model geometry
     GeoModel3D geomodel;
     bool loaded_model_is_valid = geomodel_load(geomodel, file_name);
-    std::cout << "trying to make dsi" << std::endl;
     DSI* dsi = new DSI(geomodel.mesh);
-    std::cout << "made a dsi" << std::endl;
     std::clock_t start;
+     double duration;
+    double temp;
     start = std::clock();
     dsi->add_constant_gradient();
+    duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+    std::cout<<"Assembling CG constraint took: "<<duration<<" seconds"<<std::endl;
     std::vector<InterfaceData> ifaces;
-    ifaces.push_back(InterfaceData(0.1, 0.1, 0.1, 0.0));
-    ifaces.push_back(InterfaceData(5.1, 5.1, 5.1, 1.0));
+            ifaces.push_back(InterfaceData(0.1, 0.1, -10.1, 0.0));
+            ifaces.push_back(InterfaceData(5.1, 5.1, -5.1, 15.0));
+
     dsi->add_control_points(ifaces);
+    temp = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+
+    std::cout<<"Adding control points took: "<< temp - duration<<" seconds"<<std::endl;
     dsi->solve_system();
-    // double duration;
-    // duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+    duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+    std::cout<<"Solving system took: "<< duration - temp<<" seconds"<<std::endl;
     //// Tetrahedralize the GeoModel
     //// tetrahedralize(geomodel, NO_ID, false);
     // std::string file_name_out(ringmesh_test_data_path);
@@ -265,19 +343,21 @@ int main(int argc, char** argv) {
         const Region3D& cur_reg = geomodel.region(m);
         GEO::AttributesManager& reg_attr_mgr =
             cur_reg.vertex_attribute_manager();
+
         reg_attr_mgr.list_attribute_names(names);
+        
         for (const auto& name : names) {
+            std::cout<<name<<std::endl;
             GEO::AttributeStore* attr_store =
                 reg_attr_mgr.find_attribute_store(name);
             GEO::ReadOnlyScalarAttributeAdapter cur_attr(reg_attr_mgr, name);
             for (index_t vi = 0; vi < cur_reg.nb_vertices(); vi++) {
-                std::cout << cur_attr[vi] << std::endl;
 
             }
         }
     }
-    geomodel_save(geomodel, ringmesh_test_output_path + "geomodel" +
-                                std::to_string(3) + "d." + "so");
+    geomodel_save(geomodel, ringmesh_test_output_path + "geomodel_wdata" +
+                                std::to_string(3) + "d." + "vtk");
     // index_t nb{0};
     // index_t nc{0};
     //// iterate over all regions in the geomodel
