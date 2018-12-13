@@ -267,6 +267,8 @@ void DSI::add_gradient_control_points(std::vector<PlanarData> planardata) {
 //    
     }
 void DSI::solve_system() {
+    int n = 4;
+    Eigen::setNbThreads(n);
     Eigen::SparseMatrix<double> A(_c, _nc);
     Eigen::VectorXd B(_c);
     A.reserve(_A.size());
@@ -279,6 +281,7 @@ void DSI::solve_system() {
         B(i) = _B[i];
     }
     Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double> > lscg;
+    lscg.setTolerance(0.001);
     lscg.compute(A);
     if (lscg.info() !=Eigen::Success){
         std::cout<<"Failed 1"<<std::endl;
