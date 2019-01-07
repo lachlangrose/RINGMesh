@@ -104,7 +104,7 @@ namespace RINGMesh
          * @param[in] refine tells whether or not there are refined options to
          * set (true by defaults)
          */
-        bool tetrahedralize( bool refine = true );
+        bool tetrahedralize( bool refine = true , double quality = 1.0);
 
     protected:
         TetraGen( GeoModel3D& geomodel, index_t region_id )
@@ -112,7 +112,7 @@ namespace RINGMesh
         {
         }
 
-        virtual bool do_tetrahedralize( bool refine ) = 0;
+        virtual bool do_tetrahedralize( bool refine , double quality = 1.0) = 0;
 
     protected:
         GeoModelBuilder3D builder_;

@@ -6,6 +6,14 @@
 #include <Eigen/Dense>
 #include <unordered_map>
 namespace RINGMesh {
+
+struct CellNeighbourIndex{
+	CellNeighbourIndex(index_t cell1, index_t cell2) : _cell1(cell1),_cell2(cell2){}
+	bool operator==(const CellNeighbourIndex& rhs) const;
+	bool operator!=(const CellNeighbourIndex& rhs) const;
+	index_t _cell1{ NO_ID };
+	index_t _cell2{ NO_ID };
+};
 class Point3D {
 public:
     Point3D(double x, double y, double z);
@@ -55,7 +63,6 @@ private:
     Eigen::MatrixXd _I;
     index_t _c;
     index_t _nc;
-    std::unordered_map<index_t, index_t> _dinfo;
 };
 }  // namespace RINGMesh
 #endif /* INTERPOLATION_H */

@@ -72,7 +72,7 @@ namespace RINGMesh
      */
     void geomodel_tools_api tetrahedralize( GeoModel3D& geomodel,
         index_t region_id = NO_ID,
-        bool add_steiner_points = true );
+        bool add_steiner_points = true , double quality = 1.0 );
 
     /*!
      * Compute the tetrahedral mesh of the input structural geomodel
@@ -88,7 +88,7 @@ namespace RINGMesh
     void geomodel_tools_api tetrahedralize( GeoModel3D& geomodel,
         index_t region_id,
         bool add_steiner_points,
-        const std::vector< std::vector< vec3 > >& internal_vertices );
+        const std::vector< std::vector< vec3 > >& internal_vertices, double quality );
 
     /*!
      * @brief Translates the boundary geomodel by a vector.

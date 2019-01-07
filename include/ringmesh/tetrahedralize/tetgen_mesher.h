@@ -74,7 +74,7 @@ namespace RINGMesh
             VolumeMeshBuilder< 3 >& output_mesh_builder );
 
         void add_points_to_match_quality( double quality );
-
+	void set_maximum_element_volume(double max_volume);
     private:
         void initialize();
         void initialize_tetgen_args();
@@ -105,7 +105,9 @@ namespace RINGMesh
          * Y = Do not add points on boundaries
          * AA = Save tetrahedron regions
          */
-        std::string tetgen_command_line_ = std::string( "QpnYAA" );
+        //std::string tetgen_command_line_ = std::string( "QpnYAA" );
+
+        std::string tetgen_command_line_ = std::string( "pnAA" );
         GEO_3rdParty::tetgenbehavior tetgen_args_;
 
         std::unique_ptr< GEO_3rdParty::tetgenio::polygon[] > polygons_{};

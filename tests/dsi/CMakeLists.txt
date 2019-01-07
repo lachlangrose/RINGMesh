@@ -33,4 +33,5 @@
 
 
 add_ringmesh_test(interpolation.cpp tetrahedralize io geogram_extension)
+add_ringmesh_test(mesher.cpp tetrahedralize io geogram_extension)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)

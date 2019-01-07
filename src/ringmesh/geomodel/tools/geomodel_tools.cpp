@@ -109,18 +109,18 @@ namespace RINGMesh
     }
 
     void tetrahedralize(
-        GeoModel3D& geomodel, index_t region_id, bool add_steiner_points )
+        GeoModel3D& geomodel, index_t region_id, bool add_steiner_points ,double quality)
     {
         std::vector< std::vector< vec3 > > internal_vertices(
             geomodel.nb_regions() );
         tetrahedralize(
-            geomodel, region_id, add_steiner_points, internal_vertices );
+            geomodel, region_id, add_steiner_points, internal_vertices, quality );
     }
 
     void tetrahedralize( GeoModel3D& geomodel,
         index_t region_id,
         bool add_steiner_points,
-        const std::vector< std::vector< vec3 > >& internal_vertices )
+        const std::vector< std::vector< vec3 > >& internal_vertices , double quality)
     {
         const std::string method{ GEO::CmdLine::get_arg( "algo:tet" ) };
         if( region_id == NO_ID )
@@ -130,7 +130,7 @@ namespace RINGMesh
             for( auto i : range( geomodel.nb_regions() ) )
             {
                 tetrahedralize(
-                    geomodel, i, add_steiner_points, internal_vertices );
+                    geomodel, i, add_steiner_points, internal_vertices , quality);
                 progress.next();
             }
         }
@@ -143,7 +143,7 @@ namespace RINGMesh
             tetragen->set_internal_points( internal_vertices[region_id] );
             bool status{ Logger::instance()->is_quiet() };
             Logger::instance()->set_quiet( true );
-            tetragen->tetrahedralize( add_steiner_points );
+            tetragen->tetrahedralize( add_steiner_points , quality);
             Logger::instance()->set_quiet( status );
         }
 

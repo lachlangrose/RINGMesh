@@ -333,14 +333,18 @@ namespace RINGMesh
         TetgenMesher mesher;
         if( refine )
         {
-            mesher.add_points_to_match_quality( quality );
+//            mesher.add_points_to_match_quality( quality );
+            mesher.set_maximum_element_volume( quality );
         }
         mesher.tetrahedralize( in_mesh, out_tet_mesh );
     }
 
     void TetgenMesher::add_points_to_match_quality( double quality )
     {
-        tetgen_command_line_ += "q" + std::to_string( quality );
+        tetgen_command_line_ += "q"+std::to_string(quality);
+    }
+    void TetgenMesher::set_maximum_element_volume( double max_volume) {
+	    tetgen_command_line_ += "a"+std::to_string(max_volume);
     }
 } // namespace RINGMesh
 

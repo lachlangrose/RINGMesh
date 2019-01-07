@@ -68,12 +68,12 @@ namespace RINGMesh
         {
         }
 
-        bool do_tetrahedralize( bool refine ) final
+        bool do_tetrahedralize( bool refine , double quality = 1.0) final
         {
             auto mesh3D_builder =
                 builder_.geometry.create_region_builder( output_region_ );
             tetrahedralize_mesh_tetgen(
-                *mesh3D_builder.get(), tetmesh_constraint_, refine, 1.0 );
+                *mesh3D_builder.get(), tetmesh_constraint_, refine, quality );
             return true;
         }
     };
@@ -620,9 +620,9 @@ namespace RINGMesh
             points.front().data(), points.size() * 3 * sizeof( double ) );
     }
 
-    bool TetraGen::tetrahedralize( bool refine )
+    bool TetraGen::tetrahedralize( bool refine , double quality)
     {
-        bool result = do_tetrahedralize( refine );
+        bool result = do_tetrahedralize( refine ,quality);
         if( result )
         {
             builder_.geometry.clear_geomodel_mesh();

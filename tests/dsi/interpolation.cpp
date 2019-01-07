@@ -19,7 +19,6 @@
 
 #include <ringmesh/mesh/volume_mesh.h>
 
-#include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <ctime>
 #include <iostream>
@@ -27,6 +26,19 @@
 
 using Eigen::MatrixXd;
 using namespace RINGMesh;
+bool CellNeighbourIndex::operator==( const CellNeighbourIndex& rhs )  const{
+if (rhs._cell1 == _cell1) {
+	return rhs._cell2 == _cell2;
+}
+if (rhs._cell2 == _cell1) {
+	return rhs._cell1 == _cell2;
+}
+return false;
+}
+
+bool CellNeighbourIndex::operator!=(const CellNeighbourIndex& rhs) const {
+return !operator==(rhs);
+}
 Point3D::Point3D(double x, double y, double z) : _x(x), _y(y), _z(z) {}
 
 InterfaceData::InterfaceData(double x, double y, double z, double v)
@@ -43,7 +55,7 @@ DSI::DSI(const GeoModelMesh3D& mesh)
 void DSI::calculate_cell_gradient(index_t cell_global_index,
                                   Eigen::MatrixXd& grad,
                                   std::vector<index_t>& vert_idx) {
-    Eigen::MatrixXd vertices(_mesh.cells.nb_vertices(cell_global_index), 3);
+    Eigen::MatrixXd vertices(int(_mesh.cells.nb_vertices(cell_global_index)), 3);
     //vertices 
     // x0 y0 z0 //
     // x1 y1 z1 //
@@ -75,6 +87,7 @@ void DSI::calculate_cell_gradient(index_t cell_global_index,
     return;
 }
 void DSI::add_constant_gradient(double w) {
+	std::cout<<"Adding constant gradient "<<_c<<std::endl;
     std::vector<double> A;
     std::vector<index_t> row;
     std::vector<index_t> col;
@@ -85,9 +98,10 @@ void DSI::add_constant_gradient(double w) {
     index_t Na = 4;
     int idc[Nc] = {0};  // std::vector<int> idc(Nc);        // constraint id
     double cstr[Nc] = {0.0};  // std::vector<double> cstr(Nc,0.0);
-
+    std::vector<CellNeighbourIndex> visited;
     int common_index;
     index_t next_available_position, position_to_write;
+    bool isVisited = false;
     for (index_t m = 0; m < _mesh.geomodel().nb_regions();
          m++) {  // loop over regions
         _nc = _mesh.geomodel().region(m).nb_vertices();
@@ -102,12 +116,24 @@ void DSI::add_constant_gradient(double w) {
             for (index_t f = 0; f < _mesh.cells.nb_facets(cell_in_gmm);
                  f++) {  // loop over neighbours
                 index_t n = _mesh.cells.adjacent(cell_in_gmm, f);
+		CellNeighbourIndex pair(c,n);
+		isVisited = false;
+		for(const auto&it:visited){
+			if(it == pair){
+				isVisited = true;
+				break;
+			}
+		}
+		if (isVisited == true){
+			continue;
+		}
+		visited.push_back(pair);
                 if (n == GEO::NO_CELL) {
                     continue;
-                }
+                } //endif no cell
                 Eigen::MatrixXd shared_vertices(
-                    _mesh.cells.nb_facet_vertices(
-                        CellLocalFacet(cell_in_gmm, f)),
+                    int(_mesh.cells.nb_facet_vertices(
+                        CellLocalFacet(cell_in_gmm, f))),
                     3);
                 for (index_t f_v = 0; f_v < _mesh.cells.nb_facet_vertices(
                                                 CellLocalFacet(cell_in_gmm, f));
@@ -118,7 +144,7 @@ void DSI::add_constant_gradient(double w) {
                     for (index_t i = 0; i < 3; i++) {
                         shared_vertices(f_v, i) = vert[i];
                     }
-                }  // loop
+                }  // loop faces
                 Eigen::MatrixXd e2(3, 3);
                 std::vector<index_t> n_vert_idx;
                 calculate_cell_gradient(n, e2, n_vert_idx);
@@ -168,13 +194,13 @@ void DSI::add_constant_gradient(double w) {
                     cstr[i] = 0;
                 }
             _c++;  // next constraint adds a new row to the matrix
-
            _B.push_back(0.0);
                 // install constraint
             }      // end loop over neighbours
 
         }
     }
+    std::cout<<"Added constant gradient: "<<_c<<std::endl;
 }
 
 void DSI::add_control_points(std::vector<InterfaceData> interfacedata) {
@@ -182,7 +208,7 @@ void DSI::add_control_points(std::vector<InterfaceData> interfacedata) {
     Eigen::MatrixXd M(4, 4);
     for (const auto& iface : interfacedata) {
 
-        M = Eigen::MatrixXd::Constant(4, 4, 1.0);
+        M = MatrixXd::Constant(4, 4, 1.0);
         vecn<3> point(iface.x(), iface.y(), iface.z());
         index_t containing_cell = aabb3D.containing_cell(point);
         std::cout<<"adding a control point"<<std::endl;
@@ -269,6 +295,7 @@ void DSI::add_gradient_control_points(std::vector<PlanarData> planardata) {
 void DSI::solve_system() {
     int n = 4;
     Eigen::setNbThreads(n);
+    std::cout<<"Using "<<n<<" threads"<<std::endl;
     Eigen::SparseMatrix<double> A(_c, _nc);
     Eigen::VectorXd B(_c);
     A.reserve(_A.size());
@@ -276,7 +303,7 @@ void DSI::solve_system() {
         A.insert( _row[i], _col[i]) = _A[i];
     }
     //std::cout<<A<<std::endl;
-    
+    std::cout<<A.cols()<<" "<<A.rows()<<std::endl;
     for (index_t i = 0; i < _c; i++) {
         B(i) = _B[i];
     }
