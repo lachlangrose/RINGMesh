@@ -28,27 +28,28 @@ private:
 double Point3D::x() const {return _x;}
 double Point3D::y() const {return _y;}
 double Point3D::z() const {return _z;}
+
 class InterfaceData : public Point3D {
 public:
     InterfaceData(double x, double y, double z, double v);
     double _v;
-    
-private:
 };
 class PlanarData : public Point3D {
 public:
-    PlanarData(double x, double y, double z, Point3D v);
-    Point3D _v;
+    PlanarData(double x, double y, double z, Eigen::Vector3d v);
+	PlanarData(double x, double y, double z, double strike, double dip);
+	double operator[] (int x);
+    Eigen::Vector3d _v;
 };
 
 class DSI {
 public:
     DSI(const GeoModelMesh3D& mesh);
     void add_constant_gradient(double w = 0.1);
-    void add_control_points(std::vector<InterfaceData> interfacedata);
-    void add_gradient_control_points(std::vector<PlanarData> planardata);
+    void add_control_points(std::vector<InterfaceData> interfacedata, double w = 1.0);
+    void add_gradient_control_points(std::vector<PlanarData> planardata, double w = 1.0);
     void build_interpolation_matrix();
-    void solve_system();
+    void solve_system(int solver);
 private:
     void calculate_cell_gradient(index_t cell_global_index,
                                  Eigen::MatrixXd& grad,

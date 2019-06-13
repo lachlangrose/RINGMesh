@@ -13,3 +13,4 @@
 [submodule "third_party/fesapi"]
 	path = third_party/fesapi
 	url = https://github.com/ringmesh/fesapi
+

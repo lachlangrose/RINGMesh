@@ -40,6 +40,9 @@ endif()
 if(RINGMESH_WITH_RESQML2)
     set(submodules ${submodules} third_party/fesapi)
 endif()
+if(RINGMESH_WITH_PYBIND11)
+	set(submodules ${submodules} third_party/pybind11)
+endif()
 execute_process(
    COMMAND git submodule update --init ${submodules}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

@@ -54,6 +54,7 @@ option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 option(RINGMESH_WITH_GUI "Compile GUI bindings" OFF)
 option(RINGMESH_WITH_RESQML2 "RESQML2 support: compile with FesAPI (not avaible for MACOS)" OFF)
+option(RINGMESH_WITH_PYBIND11 "Python bindigs" ON)
 
 # Optional custom steps 
 option(BUILD_GEOGRAM_WITHOUT_EXE "Compile geogram without tests and executables" ON)

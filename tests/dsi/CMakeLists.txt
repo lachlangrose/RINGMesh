@@ -32,6 +32,12 @@
 #     FRANCE
 
 
-add_ringmesh_test(interpolation.cpp tetrahedralize io geogram_extension)
-add_ringmesh_test(mesher.cpp tetrahedralize io geogram_extension)
+set( CMAKE_VERBOSE_MAKEFILE on )
+#add_ringmesh_test(mesher.cpp tetrahedralize io geogram_extension)
+#    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion
+#        -Wsign-conversion -Wdouble-promotion -Wno-attributes)
+link_directories(${SPQR_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SUITESPARSE_LIBRARY})
+add_ringmesh_test(interpolation.cpp tetrahedralize io geogram_extension pybind11 spqr cholmod suitesparseconfig lapack openblas cudart cublas cuda SuiteSparse_GPURuntime GPUQREngine) 
+#//pybind11_add_module(RMDSI interpolation.cpp)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+

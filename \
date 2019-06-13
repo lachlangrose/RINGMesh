@@ -22,38 +22,24 @@ include(cmake/utils.cmake)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # ---------------- LG    
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    message(STATUS "Open MP found")
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-endif()
+#find_package(OpenMP)
+#if (OPENMP_FOUND)
+#    message(STATUS "Open MP found")
+#    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+#    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+#endif()
 
 # Get Eigen dependency
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(Eigen3 REQUIRED)
-set(CHOLMOD_INCLUDES "/home/lgrose/sandbox/SuiteSparse/CHOLMOD/Include")
-set(CHOLMOD_LIBRARIES "/home/lgrose/sandbox/SuiteSparse/CHOLMOD/Lib")
-set(SPQR_INCLUDES "/home/lgrose/sandbox/SuiteSparse/SPQR/Include")
-set(SPQR_LIBRARIES "/home/lgrose/sandbox/SuiteSparse/SPQR/Lib")
-set(SUITESPARSE_INCLUDES "/home/lgrose/sandbox/SuiteSparse/include")
-set(SUITESPARSE_LIBRARY "/home/lgrose/sandbox/SuiteSparse/lib")
-find_package(Cholmod REQUIRED)
-find_package(SPQR REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${SPQR_INCLUDES})
-include_directories(${CHOLMOD_INCLUDES})
-include_directories(${SUITESPARSE_INCLUDES})
-#add pybind11
-add_subdirectory(third_party/pybind11)
 ### ------------------ /LG
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(UNIX)
-	add_compile_options(-w)
-	#	add_compile_options(-W -Wall -Wextra -Wno-long-long -Wconversion
-	#        -Wsign-conversion -Wdouble-promotion -Wno-attributes)
+    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion
+        -Wsign-conversion -Wdouble-promotion -Wno-attributes)
 
     if(APPLE)
         if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

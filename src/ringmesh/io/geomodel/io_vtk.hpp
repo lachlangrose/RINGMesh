@@ -138,7 +138,6 @@ namespace
 
                     out << "FIELD FieldData 3 " <<EOL; //SCALARS "<<name<<" float64 1" <<EOL;
                 for (const auto& name : names) {
-                    std::cout<<name<<std::endl;
                     out << name <<" 1 "<<cur_reg.nb_vertices()<<" double"<<EOL;
                     //LOOKUP_TABLE default" << EOL;
                     
